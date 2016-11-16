@@ -71,7 +71,11 @@ end
 print(model)
 
 print(c.blue '==>' ..' loading data')
-provider = torch.load 'provider.t7'
+--provider = torch.load 'provider.t7'
+provider = {trainData = nil, testData = nil}
+provider.trainData = torch.load('provider.t7')
+provider.testData = torch.load('cifar10-test.t7')
+
 provider.trainData.data = provider.trainData.data:float()
 provider.testData.data = provider.testData.data:float()
 
@@ -118,7 +122,7 @@ function train()
     xlua.progress(t, #indices)
 
     local inputs = provider.trainData.data:index(1,v)
-    targets:copy(provider.trainData.labels:index(1,v))
+    targets:copy(provider.trainData.label:index(1,v))
 
     local feval = function(x)
       if x ~= parameters then parameters:copy(x) end
@@ -154,7 +158,7 @@ function test()
   local bs = 125
   for i=1,provider.testData.data:size(1),bs do
     local outputs = model:forward(provider.testData.data:narrow(1,i,bs))
-    confusion:batchAdd(outputs, provider.testData.labels:narrow(1,i,bs))
+    confusion:batchAdd(outputs, provider.testData.label:narrow(1,i,bs))
   end
 
   confusion:updateValids()
